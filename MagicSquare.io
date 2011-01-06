@@ -1,3 +1,5 @@
+#!/usr/bin/env io
+
 //
 // Simple n x n Magic Square solver
 // Dustin Barker <dustin.barker@gmail.com>
@@ -16,7 +18,9 @@ MagicSquare := Object clone do(
         nil
       )
     )
+    
     square order = order
+    square solve
     square
   )
   
@@ -97,6 +101,22 @@ MagicSquare := Object clone do(
     true
   )
 
+  main := method(
+    order := System args at(1)
+
+    if (order isNil,
+      "Usage: MagicNumber.io <order>\norder must be a positive, odd or double even integer)" println,
+      order := order asNumber
+      if (order < 1 or (order % 2 == 0 and (order / 2) % 2 != 0),
+        "Input either an odd or a double even positive integer." println
+        exit(-1),
+        
+        square := MagicSquare square(order)
+        square display
+      )
+    )
+  )
+
 )
 
 MagicSquareOddOrder := MagicSquare clone do(
@@ -131,9 +151,5 @@ MagicSquareDoubleEvenOrder := MagicSquare clone do(
   )
 )
 
-square := MagicSquare square(5)
-square println
-square solve
-square display
-square isMagic println
+MagicSquare main()
 
