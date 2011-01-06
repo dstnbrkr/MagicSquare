@@ -7,7 +7,7 @@
 MagicSquare := Object clone do(
 
   order := 0
-
+  
   emptyList := method(
     values := list()
     for(row, 1, order,
@@ -19,6 +19,14 @@ MagicSquare := Object clone do(
     values
   )
 
+  values := method(
+    nil
+  )
+
+)
+
+MagicSquareOddOrder := MagicSquare clone do (
+
   wrapIndex := method(index,
     // FIXME: should be if/else
     wIndex := index clone
@@ -28,7 +36,7 @@ MagicSquare := Object clone do(
   )
   
   // de la Loubère method 
-  oddOrderValues := method(
+  values := method(
     values := self emptyList() 
     row := 0
     col := (self order / 2) floor
@@ -52,7 +60,7 @@ MagicSquare := Object clone do(
 
 )
 
-square := MagicSquare clone
+square := MagicSquareOddOrder clone
 square order := 3
-square oddOrderValues println
+square values println
 
