@@ -7,7 +7,12 @@ MagicSquare := Object clone do(
 
   order := 0
   values := list()
-  
+
+  // abstract 
+  nextCell := method(
+    nil
+  )
+ 
   emptyList := method(
     values := list()
     for(row, 1, order,
@@ -20,6 +25,15 @@ MagicSquare := Object clone do(
   )
   
   solve := method(
+    // select algorithm
+    if(order % 2 != 0,                                         // odd
+      self nextCell = MagicSquareOddOrder getSlot("nextCell"),
+      if ((order / 2) % 2 == 0,                                // double even
+        self nextCell = MagicSquareDoubleEvenOrder getSlot("nextCell"),
+        nil
+      )
+    )  
+
     self values := self emptyList()
     cell := Cell clone
     cell row = 0
@@ -70,7 +84,7 @@ MagicSquareOddOrder := MagicSquare clone do (
 
 )
 
-square := MagicSquareOddOrder clone
+square := MagicSquare clone
 square order := 3
 square solve
 square display
