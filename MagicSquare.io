@@ -50,7 +50,7 @@ MagicSquareOddOrder := MagicSquare clone do (
       if(values at(nextrow) at(nextcol), 
         nextrow = row + 1
         nextcol = col
-      ) // FIXME: needs to wrap?
+      )
   
       row = nextrow
       col = nextcol
