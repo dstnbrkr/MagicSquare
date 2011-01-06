@@ -7,7 +7,7 @@ $> MagicSquare.io 3
 4 9 2 
 
 $> MagicSquare.io 4
-1 15 14 4 
+1 15 14 4<br/>
 12 6  7 9 
 8 10 11 5 
 13 3 2 16 
