@@ -3,16 +3,17 @@
 // Dustin Barker <dustin.barker@gmail.com>
 //
 
+
+  Cell := Object clone do (
+    row := 0
+    col := 0
+  )
+
 MagicSquare := Object clone do(
 
   order := 0
   values := list()
 
-  // abstract 
-  nextCell := method(
-    nil
-  )
- 
   emptyList := method(
     values := list()
     for(row, 1, order,
@@ -23,16 +24,40 @@ MagicSquare := Object clone do(
     )
     values
   )
+
+  // de la Loubère method 
+  nextCellOddOrder := method(cell, 
+    row := (cell row - 1) % order
+    col := (cell col + 1) % order
+  
+    if(at(row, col), 
+      row = cell row + 1
+      col = cell col
+    )
+ 
+    cell := Cell clone
+    cell row = row
+    cell col = col
+    cell
+  )
+
+  nextCellDoubleEvenOrder := method(cell,
+    
+  )
+
+  selectNextCellAlgorithm := method(
+    if(order % 2 != 0,                  // odd
+      self getSlot("nextCellOddOrder"),
+      if ((order / 2) % 2 == 0,           // double even
+        self getSlot("nextCellDoubleEvenOrder"),
+        nil
+      )
+    )
+  )
   
   solve := method(
     // select algorithm
-    if(order % 2 != 0,                                         // odd
-      self nextCell = MagicSquareOddOrder getSlot("nextCell"),
-      if ((order / 2) % 2 == 0,                                // double even
-        self nextCell = MagicSquareDoubleEvenOrder getSlot("nextCell"),
-        nil
-      )
-    )  
+    nextCell := self selectNextCellAlgorithm()
 
     self values := self emptyList()
     cell := Cell clone
@@ -40,7 +65,7 @@ MagicSquare := Object clone do(
     cell col = (self order / 2) floor
     for(i, 1, order**2,
         values at(cell row) atPut(cell col, i)
-        cell = self nextCell(cell)
+        cell = nextCell(cell)
     )
   )
 
@@ -59,33 +84,8 @@ MagicSquare := Object clone do(
   )
 )
 
-Cell := Object clone do (
-  row := 0
-  col := 0
-)
-
-MagicSquareOddOrder := MagicSquare clone do (
-
-  // de la Loubère method 
-  nextCell := method(cell,
-    row := (cell row - 1) % order
-    col := (cell col + 1) % order
-  
-    if(at(row, col), 
-      row = cell row + 1
-      col = cell col
-    )
- 
-    cell := Cell clone
-    cell row = row
-    cell col = col
-    cell
-  )
-
-)
-
 square := MagicSquare clone
-square order := 3
+square order := 4
 square solve
 square display
 
