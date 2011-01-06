@@ -1,4 +1,3 @@
-
 //
 // Simple n x n Magic Square solver
 // Dustin Barker <dustin.barker@gmail.com>
@@ -31,10 +30,14 @@ MagicSquare := Object clone do(
     )
   )
 
+  at := method(row, col,
+    self values at(row) at(col)
+  )
+
   display := method(
     for(row, 0, order - 1,
       for(col, 0, order - 1,
-        self values at(row) at(col) print
+        self at(row, col) print
         " " print
       )
       "\n" print
@@ -49,19 +52,12 @@ Cell := Object clone do (
 
 MagicSquareOddOrder := MagicSquare clone do (
 
-  wrapIndex := method(index,
-    if(index == -1, 
-      order - 1,
-      if(index == self order, 0, index)
-    )
-  )
-
   // de la Loubère method 
   nextCell := method(cell,
-    row := wrapIndex(cell row - 1)
-    col := wrapIndex(cell col + 1)
+    row := (cell row - 1) % order
+    col := (cell col + 1) % order
   
-    if(self values at(row) at(col), 
+    if(at(row, col), 
       row = cell row + 1
       col = cell col
     )
