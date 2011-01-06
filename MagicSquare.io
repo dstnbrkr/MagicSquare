@@ -105,7 +105,7 @@ MagicSquare := Object clone do(
     order := System args at(1)
 
     if (order isNil,
-      "Usage: MagicNumber.io <order>\norder must be a positive, odd or double even integer)" println,
+      "Usage: MagicNumber.io <order>\n(order must be a odd or double even positive integer)" println,
       order := order asNumber
       if (order < 1 or (order % 2 == 0 and (order / 2) % 2 != 0),
         "Input either an odd or a double even positive integer." println
