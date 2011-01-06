@@ -7,6 +7,7 @@
 MagicSquare := Object clone do(
 
   order := 0
+  values := list()
   
   emptyList := method(
     values := list()
@@ -18,49 +19,63 @@ MagicSquare := Object clone do(
     )
     values
   )
-
-  values := method(
-    nil
+  
+  solve := method(
+    self values := self emptyList()
+    cell := Cell clone
+    cell row = 0
+    cell col = (self order / 2) floor
+    for(i, 1, order**2,
+        values at(cell row) atPut(cell col, i)
+        cell = self nextCell(cell)
+    )
   )
 
+  display := method(
+    for(row, 0, order - 1,
+      for(col, 0, order - 1,
+        self values at(row) at(col) print
+        " " print
+      )
+      "\n" print
+    )
+  )
+)
+
+Cell := Object clone do (
+  row := 0
+  col := 0
 )
 
 MagicSquareOddOrder := MagicSquare clone do (
 
   wrapIndex := method(index,
-    // FIXME: should be if/else
-    wIndex := index clone
-    if(index == -1, wIndex = order - 1)
-    if(index == self order, wIndex = 0)
-    wIndex
-  )
-  
-  // de la Loubère method 
-  values := method(
-    values := self emptyList() 
-    row := 0
-    col := (self order / 2) floor
-    for(i, 1, order**2,
-      values at(row) atPut(col, i)
-      
-      // new vars, might need original values 
-      nextrow := wrapIndex(row - 1)
-      nextcol := wrapIndex(col + 1)
-  
-      if(values at(nextrow) at(nextcol), 
-        nextrow = row + 1
-        nextcol = col
-      )
-  
-      row = nextrow
-      col = nextcol
+    if(index == -1, 
+      order - 1,
+      if(index == self order, 0, index)
     )
-    values
+  )
+
+  // de la Loubère method 
+  nextCell := method(cell,
+    row := wrapIndex(cell row - 1)
+    col := wrapIndex(cell col + 1)
+  
+    if(self values at(row) at(col), 
+      row = cell row + 1
+      col = cell col
+    )
+ 
+    cell := Cell clone
+    cell row = row
+    cell col = col
+    cell
   )
 
 )
 
 square := MagicSquareOddOrder clone
 square order := 3
-square values println
+square solve
+square display
 
