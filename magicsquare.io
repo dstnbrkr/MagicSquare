@@ -2,6 +2,7 @@
 //
 // Simple n x n Magic Square solver
 // Dustin Barker <dustin.barker@gmail.com>
+//
 
 MagicSquare := Object clone do(
 
