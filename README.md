@@ -12,4 +12,16 @@ $> MagicSquare.io 4<br/>
 8 10 11 5<br/>
 13 3 2 16<br/>
 
+Specify genetic mode with the 'g' flag (very, very slow):
+$> MagicSquare.io 3 g<br/>
+generation 0, best fitness score: 1.375
+generation 1, best fitness score: 0.625
+Generated 901 magic squares in 2 generations.
+6 1 8<br/>
+7 5 3<br/>
+2 9 4<br/>
+fitness: 0, isMagic: true
+
+
+
 
