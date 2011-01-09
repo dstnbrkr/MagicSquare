@@ -192,6 +192,16 @@ MagicSquareGenome := MagicSquare clone do(
     )
   )
 
+  breedSelection := method(genomes,
+    offspring := list()
+    for(i, 0, genomes size - 1,
+      for(j, 0, genomes size - 1,
+        offspring append(self breed(genomes at(i), genomes at(j)))
+      )
+    )
+    offspring flatten // flatten pairs returned by breed
+  )
+
   search := method(
 
     // initial population
@@ -201,42 +211,51 @@ MagicSquareGenome := MagicSquare clone do(
       genomes append(genome)
     )
  
-    ngenerations := 0
-    ngenomes := 0
+    ngenerations   := 0
+    ngenomes       := 0
+    improvements   := list()
+    // 3 consecutive improvements of 0 will cause the loop to exit
+    for (i, 0, 3,
+      improvements append(0)
+    )
+    bestfitness    := 0
+
     // while population does not contain solution
-    magic := nil
-    while(magic == nil,
+    while(genomes detect(genome, genome isMagic) == nil,
       ngenomes = ngenomes + genomes size
 
       genomes = genomes sortBy(block(a, b,
         a fitness < b fitness)
       )
-      
-      genomes = genomes slice(0, 20)
-      
-      "generation " print
-      ngenerations print
-      ", best fitness score: " print
-      genomes at(0) fitness println
+    
+      // check for convergence 
+      if (ngenerations > 0,
+        improvements removeFirst()
+        improvements push (bestfitness - genomes at(0) fitness)
+        avg := improvements average
 
-      ngenerations = ngenerations + 1
-      
-      // breed
-      offspring := list()
-      for(i, 0, genomes size - 1,
-        for(j, 0, genomes size - 1,
-          offspring append(self breed(genomes at(i), genomes at(j)))
+        if (improvements average == 0,
+          "Population converged without finding solution." println
+          self break()
         )
       )
-      genomes = offspring flatten // breed returns a pair
-      magic = genomes detect(genome, genome isMagic)
+      bestfitness = genomes at(0) fitness
+
+      // output generation stats
+      "generation #{ngenerations}, best fitness: #{bestfitness}, improvement: #{improvements last()}" interpolate() println()
+
+      // breed next generation
+      ngenerations = ngenerations + 1
+      genomes = self breedSelection(genomes slice(0, 19))
     )
+
     "Generated " print
     ngenomes print
     " magic squares in " print
     ngenerations print
     " generations." println
-    magic
+
+    genomes at(0)
   )
 
   breed := method(square1, square2,
