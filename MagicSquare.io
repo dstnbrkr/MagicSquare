@@ -5,10 +5,31 @@
 // Dustin Barker <dustin.barker (at) gmail (dot) com>
 //
 
+List standardDeviation := method(
+  avg := self average()
+  (self map(v, (v - avg) ** 2) sum() / self size()) ** (1/2)
+)
+
 MagicSquare := Object clone do(
 
-  values := list()
   order := 0
+  magicNumber := 0
+  values := list()
+
+  setOrder := method(order,
+    self order := order;
+    self magicNumber := order * (order ** 2 + 1) / 2
+  )
+
+  flatValues := method(
+    flatValues := list()
+    for(i, 0, order - 1,
+      for(j, 0, order - 1,
+        flatValues append(values at(i) at(j))
+      )
+    ) 
+    flatValues
+  )
 
   equals := method(square,
     square != nil and self values flatten == square values flatten
@@ -23,7 +44,7 @@ MagicSquare := Object clone do(
       )
     )
     
-    square order = order
+    square setOrder(order)
     square solve
     square
   )
@@ -83,11 +104,6 @@ MagicSquare := Object clone do(
     diagonal 
   )
 
-  magicNumber := method(
-    n := self order
-    sum := n * (n ** 2 + 1) / 2
-  )
- 
   sums := method(
     sums := list()
     
@@ -136,8 +152,9 @@ MagicSquare := Object clone do(
           ,
           // genetic flag set
           s := MagicSquareGenome clone
-          s order = order
-          s search() display
+          s setOrder(order)
+          magic := s search(1000, 100)
+          if(magic, magic display())
         )
       )
     )
@@ -194,19 +211,21 @@ MagicSquareGenome := MagicSquare clone do(
 
   breedSelection := method(genomes,
     offspring := list()
+    //Profiler start()
     for(i, 0, genomes size - 1,
       for(j, 0, genomes size - 1,
         offspring append(self breed(genomes at(i), genomes at(j)))
       )
     )
+    //Profiler stop()
+    //Profiler show()
     offspring flatten // flatten pairs returned by breed
   )
 
-  search := method(
-
+  search := method(initialpop, selectedpop,
     // initial population
     genomes := list()
-    for(i, 0, 100,
+    for(i, 0, initialpop,
       genome := self random()
       genomes append(genome)
     )
@@ -220,8 +239,10 @@ MagicSquareGenome := MagicSquare clone do(
     )
     bestfitness    := 0
 
+    Profiler start()
     // while population does not contain solution
-    while(genomes detect(genome, genome isMagic) == nil,
+    magic := nil
+    while(magic == nil,
       ngenomes = ngenomes + genomes size
 
       genomes = genomes sortBy(block(a, b,
@@ -246,8 +267,11 @@ MagicSquareGenome := MagicSquare clone do(
 
       // breed next generation
       ngenerations = ngenerations + 1
-      genomes = self breedSelection(genomes slice(0, 19))
+      genomes = self breedSelection(genomes slice(0, selectedpop))
+      magic = genomes detect(genome, genome isMagic)
     )
+    Profiler stop()
+    Profiler show()
 
     "Generated " print
     ngenomes print
@@ -255,7 +279,7 @@ MagicSquareGenome := MagicSquare clone do(
     ngenerations print
     " generations." println
 
-    genomes at(0)
+    magic
   )
 
   breed := method(square1, square2,
@@ -291,8 +315,8 @@ MagicSquareGenome := MagicSquare clone do(
     v2 := square2 at(i, j)
 
     // get index of soon-to-be duplicate value
-    index1 := square1 values flatten indexOf(v2)
-    index2 := square2 values flatten indexOf(v1)
+    index1 := square1 flatValues() indexOf(v2)
+    index2 := square2 flatValues() indexOf(v1)
 
     i1 := (index1 / self order) floor
     j1 := index1 % self order
@@ -321,7 +345,7 @@ MagicSquareGenome := MagicSquare clone do(
     diffs := self sums map(sum,
       (m - sum) abs
     )
-    diffs average
+    diffs average() + diffs standardDeviation()
   )
 
   randomValues := method(
@@ -352,7 +376,8 @@ MagicSquareGenome := MagicSquare clone do(
     )
 
     square := MagicSquareGenome clone
-    square order = self order // FIXME redundant with setting values
+    square order = self order
+    square magicNumber = self magicNumber
     square values = rows
     square
   )
@@ -360,6 +385,7 @@ MagicSquareGenome := MagicSquare clone do(
   copy := method(
     square := MagicSquareGenome clone
     square order = self order
+    square magicNumber = self magicNumber
     rows := list()
     for(i, 0, self order - 1,
       row := list()
@@ -373,7 +399,6 @@ MagicSquareGenome := MagicSquare clone do(
   )
   
 )
-
 
 MagicSquare main()
 
