@@ -162,7 +162,6 @@ MagicSquareGenome := MagicSquare clone do(
     )
     bestfitness    := 0
 
-    Profiler start()
     // while population does not contain solution
     magic := nil
     while(magic == nil,
@@ -193,8 +192,6 @@ MagicSquareGenome := MagicSquare clone do(
       genomes = self breedSelection(genomes slice(0, selectedpop))
       magic = genomes detect(genome, genome isMagic)
     )
-    Profiler stop()
-    Profiler show()
 
     "Generated " print
     ngenomes print
@@ -359,7 +356,9 @@ makeMagicSquareGenetic := method(square,
   square do (
     solve := method(
       s := MagicSquareGenome clone;
-      return s search(1000, 100);
+      s order = order;
+      s magicNumber = magicNumber;
+      return s search(100, 20);
     )
   )
 );
