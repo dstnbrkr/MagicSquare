@@ -14,12 +14,9 @@ MagicSquare := Object clone do(
 
   order := 0
   magicNumber := 0
-  values := list()
+  computeValueAt := nil
 
-  setOrder := method(order,
-    self order := order;
-    self magicNumber := order * (order ** 2 + 1) / 2;
-  )
+  values := list()
 
   flatValues := method(
     flatValues := list()
@@ -34,24 +31,10 @@ MagicSquare := Object clone do(
   equals := method(square,
     square != nil and self values flatten == square values flatten
   )
-
-  square := method(order,
-    square := if(order % 2 != 0,          // odd
-      MagicSquareOddOrder clone,
-      if ((order / 2) % 2 == 0,           // double even
-        MagicSquareDoubleEvenOrder clone,
-        nil
-      )
-    )
-    
-    square setOrder(order)
-    square solve
-    square
-  )
   
   solve := method(
     rows := list()
-    for(i, 0, order - 1,
+    for(i, 0, self order - 1,
       row := list()
       for(j, 0, order - 1,
         row append(computeValueAt(i, j))
@@ -137,38 +120,6 @@ MagicSquare := Object clone do(
 
 )
 
-MagicSquareOddOrder := MagicSquare clone do(
-  computeValueAt := method(i, j,
-    i = i + 1
-    j = j + 1
-    n := self order
-    n * ((i + j - 1 + (n / 2) floor) % n) + ((i + 2 * j - 2) % n) + 1 
-  ) 
-)
-
-MagicSquareDoubleEvenOrder := MagicSquare clone do(
-
-  // FIXME: cache truth table
-  truthTable := method(i, j,
-    table := list()
-    for(i, 0, self order - 1,
-      row := list()
-      for(j, 0, self order - 1,
-        row append( if(j == i or j == (self order - i - 1), 1, 0))
-      )
-      table append(row)
-    )
-    table 
-  )
-
-  computeValueAt := method(i, j,
-    if(truthTable at(i) at(j) == 1,
-      i * self order + 1 + j,
-      (self order ** 2) - (j + i * self order) 
-    )
-  )
-)
-
 MagicSquareGenome := MagicSquare clone do(
 
   brute := method(
@@ -186,14 +137,11 @@ MagicSquareGenome := MagicSquare clone do(
 
   breedSelection := method(genomes,
     offspring := list()
-    //Profiler start()
     for(i, 0, genomes size - 1,
       for(j, 0, genomes size - 1,
         offspring append(self breed(genomes at(i), genomes at(j)))
       )
     )
-    //Profiler stop()
-    //Profiler show()
     offspring flatten // flatten pairs returned by breed
   )
 
@@ -375,30 +323,82 @@ MagicSquareGenome := MagicSquare clone do(
   
 )
 
-main := method(order, genetic, 
+makeMagicSquareDoubleEven := method(square,
 
-  if (order isNil,
-    "Usage: MagicNumber.io <order>\n(order must be a odd or double even positive integer)" println;
-    return;
-  );
+  square do (
+    truthTable := list()
+    for(i, 0, order - 1,
+      row := list()
+      for(j, 0, order - 1,
+        row append( if(j == i or j == (order - i - 1), 1, 0))
+      )
+      truthTable append(row)
+    )
 
-  order := order asNumber;
-  if (genetic,
-    s := MagicSquareGenome clone;
-    s setOrder(order);
-    magic := s search(1000, 100);
-    if(magic, magic display());
-    return; 
-  );
-
-  if (order < 1 or (order % 2 == 0 and (order / 2) % 2 != 0),
-    "Input either an odd or a double even positive integer." println;
-    return;
-  );
-       
-  square := MagicSquare square(order);
-  square display;
+    computeValueAt = method(i, j,
+      if(self truthTable at(i) at(j) == 1,
+        i * order + 1 + j,
+        (order ** 2) - (j + i * self order) 
+      )
+    )
+  )
 )
 
-main(System args at(1), System args at(2));
+makeMagicSquareOdd := method(square,
+  square do (
+    computeValueAt := method(i, j,
+      i = i + 1;
+      j = j + 1;
+      n := self order;
+      n * ((i + j - 1 + (n / 2) floor) % n) + ((i + 2 * j - 2) % n) + 1;
+    )
+  )
+)
+
+makeMagicSquareGenetic := method(square,
+  square do (
+    solve := method(
+      s := MagicSquareGenome clone;
+      return s search(1000, 100);
+    )
+  )
+);
+
+makeMagicSquare := method(order, genetic,
+
+  square := MagicSquare clone
+  square order = order
+  square magicNumber := order * (order ** 2 + 1) / 2;
+
+    if (genetic,
+      makeMagicSquareGenetic(square);
+    );
+
+    if ((order / 2) % 2 == 0,
+      makeMagicSquareDoubleEven(square);
+    );
+
+    if (order % 2 != 0,
+      makeMagicSquareOdd(square, order);
+    );
+
+    return square;
+);
+
+main := method( 
+  order := System args at(1);
+  genetic := System args at(2);
+
+  if (order isNil,
+    "Usage: MagicNumber.io <order>" println
+    return -1;
+  );
+  
+  square := makeMagicSquare(order asNumber(), genetic);
+  square solve();
+  square display();
+  return 0;
+)
+
+main();
 
