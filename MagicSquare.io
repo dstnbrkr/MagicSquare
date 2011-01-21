@@ -18,7 +18,7 @@ MagicSquare := Object clone do(
 
   setOrder := method(order,
     self order := order;
-    self magicNumber := order * (order ** 2 + 1) / 2
+    self magicNumber := order * (order ** 2 + 1) / 2;
   )
 
   flatValues := method(
@@ -134,31 +134,6 @@ MagicSquare := Object clone do(
     true
   )
 
-  main := method(
-    order := System args at(1)
-
-    genetic := System args at(2)
-
-    if (order isNil,
-      "Usage: MagicNumber.io <order>\n(order must be a odd or double even positive integer)" println,
-      order := order asNumber
-      if (genetic == nil and (order < 1 or (order % 2 == 0 and (order / 2) % 2 != 0)),
-        "Input either an odd or a double even positive integer." println
-        exit(-1),
-       
-        if (genetic == nil, 
-          square := MagicSquare square(order)
-          square display
-          ,
-          // genetic flag set
-          s := MagicSquareGenome clone
-          s setOrder(order)
-          magic := s search(1000, 100)
-          if(magic, magic display())
-        )
-      )
-    )
-  )
 
 )
 
@@ -400,5 +375,30 @@ MagicSquareGenome := MagicSquare clone do(
   
 )
 
-MagicSquare main()
+main := method(order, genetic, 
+
+  if (order isNil,
+    "Usage: MagicNumber.io <order>\n(order must be a odd or double even positive integer)" println;
+    return;
+  );
+
+  order := order asNumber;
+  if (genetic,
+    s := MagicSquareGenome clone;
+    s setOrder(order);
+    magic := s search(1000, 100);
+    if(magic, magic display());
+    return; 
+  );
+
+  if (order < 1 or (order % 2 == 0 and (order / 2) % 2 != 0),
+    "Input either an odd or a double even positive integer." println;
+    return;
+  );
+       
+  square := MagicSquare square(order);
+  square display;
+)
+
+main(System args at(1), System args at(2));
 
