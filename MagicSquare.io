@@ -14,38 +14,22 @@ MagicSquare := Object clone do(
 
   order := 0
   magicNumber := 0
+  values := nil;
   computeValueAt := nil
 
-  values := list()
-
-  flatValues := method(
-    flatValues := list()
-    for(i, 0, order - 1,
-      for(j, 0, order - 1,
-        flatValues append(values at(i) at(j))
-      )
-    ) 
-    flatValues
-  )
-
-  equals := method(square,
-    square != nil and self values flatten == square values flatten
+  init := method(
+    values = list();
   )
   
-  solve := method(
-    rows := list()
-    for(i, 0, self order - 1,
-      row := list()
-      for(j, 0, order - 1,
-        row append(computeValueAt(i, j))
-      )
-      rows append(row)
-    )
-    self values = rows
+  at := method(i, j,
+    values at(i * order + j);
   )
 
-  at := method(row, col,
-    self values at(row) at(col)
+  solve := method(
+    for(i, 0, (self order ** 2) - 1,
+      self values append(computeValueAt((i / self order) floor, 
+                                        i % self order))
+    )
   )
 
   display := method(
@@ -58,55 +42,35 @@ MagicSquare := Object clone do(
     )
   )
 
-  row := method(i, 
-    self values at(i)
+  valueList := method(func,
+    result := list()
+    for(i, 0, order - 1,
+      result append(values at(func call(i)));
+    )
+    result
   )
 
-  col := method(j,
-    col := list()
-    for(i, 0, self order - 1,
-      col append(self at(i, j))
-    )
-    col
+  row := method(i,
+    self valueList(block(n, i * order + n));
   )
 
-  diagonal := method(direction,
-    diagonal := list()
-    if (direction == 0,
-      // northwest to southeast
-      for(i, 0, self order - 1, 1,
-        diagonal append(self at(i,i))
-      ),
-
-      // southwest to northeast
-      for(i, self order - 1, 0, -1,
-        diagonal append(self at(i, self order - 1 - i))
-      )
-    
-    )
-    diagonal 
+  col := method(i,
+    self valueList(block(n, n * order + i));
   )
 
-  sums := method(
-    sums := list()
-    
-    sums append(self diagonal(0) sum)
-    sums append(self diagonal(1) sum)
-   
-    for (i, 0, self order - 1,
-      sums append(self row(i) sum)
-      sums append(self col(i) sum)
-    )
-    sums  
+  diagonal1 := method(
+    self valueList(block(n, n * order + n));
+  )
+  
+  diagonal2 := method(
+    self valueList(block(n, (n + 1) * order - n - 1));
   )
  
   isMagic := method(
     m := self magicNumber
- 
-    d1 := self diagonal(0) sum
-    d2 := self diagonal(1) sum
 
-    if(d1 != m or d2 != m, return false)
+    if(self diagonal1 sum != m, return false);
+    if(self diagonal2 sum != m, return false);
    
     for (i, 0, self order - 1,
       s1 := self row(i) sum
@@ -235,8 +199,8 @@ MagicSquareGenome := MagicSquare clone do(
     v2 := square2 at(i, j)
 
     // get index of soon-to-be duplicate value
-    index1 := square1 flatValues() indexOf(v2)
-    index2 := square2 flatValues() indexOf(v1)
+    index1 := square1 values indexOf(v2)
+    index2 := square2 values indexOf(v1)
 
     i1 := (index1 / self order) floor
     j1 := index1 % self order
@@ -258,6 +222,19 @@ MagicSquareGenome := MagicSquare clone do(
     ", isMagic: " print
     self isMagic println
     "" println
+  )
+  
+  sums := method(
+    sums := list()
+    
+    sums append(self diagonal(0) sum)
+    sums append(self diagonal(1) sum)
+   
+    for (i, 0, self order - 1,
+      sums append(self row(i) sum)
+      sums append(self col(i) sum)
+    )
+    sums  
   )
 
   fitness := method(
@@ -323,17 +300,14 @@ MagicSquareGenome := MagicSquare clone do(
 makeMagicSquareDoubleEven := method(square,
 
   square do (
-    truthTable := list()
-    for(i, 0, order - 1,
-      row := list()
-      for(j, 0, order - 1,
-        row append( if(j == i or j == (order - i - 1), 1, 0))
-      )
-      truthTable append(row)
+    truthTable := Object clone;
+    truthTable order := order;
+    truthTable at := method(i, j,
+      if(j == i or j == (self order - i - 1), 1, 0);
     )
-
+   
     computeValueAt = method(i, j,
-      if(self truthTable at(i) at(j) == 1,
+      if(self truthTable at(i, j) == 1,
         i * order + 1 + j,
         (order ** 2) - (j + i * self order) 
       )
