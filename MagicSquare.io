@@ -14,23 +14,7 @@ MagicSquare := Object clone do(
 
   order := 0
   magicNumber := 0
-  values := nil;
-  computeValueAt := nil
-
-  init := method(
-    values = list();
-  )
-  
-  at := method(i, j,
-    values at(i * order + j);
-  )
-
-  solve := method(
-    for(i, 0, (self order ** 2) - 1,
-      self values append(computeValueAt((i / self order) floor, 
-                                        i % self order))
-    )
-  )
+  at := nil
 
   display := method(
     for(row, 0, order - 1,
@@ -45,7 +29,9 @@ MagicSquare := Object clone do(
   valueList := method(func,
     result := list()
     for(i, 0, order - 1,
-      result append(values at(func call(i)));
+      index := func call(i);
+      result append(self at((index / order) floor, 
+                            index % order));
     )
     result
   )
@@ -226,9 +212,9 @@ MagicSquareGenome := MagicSquare clone do(
   
   sums := method(
     sums := list()
-    
-    sums append(self diagonal(0) sum)
-    sums append(self diagonal(1) sum)
+   
+    sums append(self diagonal1 sum)
+    sums append(self diagonal2 sum)
    
     for (i, 0, self order - 1,
       sums append(self row(i) sum)
@@ -306,7 +292,7 @@ makeMagicSquareDoubleEven := method(square,
       if(j == i or j == (self order - i - 1), 1, 0);
     )
    
-    computeValueAt = method(i, j,
+    at = method(i, j,
       if(self truthTable at(i, j) == 1,
         i * order + 1 + j,
         (order ** 2) - (j + i * self order) 
@@ -317,7 +303,7 @@ makeMagicSquareDoubleEven := method(square,
 
 makeMagicSquareOdd := method(square,
   square do (
-    computeValueAt := method(i, j,
+    at = method(i, j,
       i = i + 1;
       j = j + 1;
       n := self order;
@@ -368,7 +354,6 @@ main := method(
   );
   
   square := makeMagicSquare(order asNumber(), genetic);
-  square solve();
   square display();
   return 0;
 )
